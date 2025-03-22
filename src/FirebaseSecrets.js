@@ -12,9 +12,9 @@ import { getFirestore } from "firebase/firestore";
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  apiKey: process.env.REACT_APP_API_KEY,
-  authDomain: process.env.AUTH_DOMAIN,
-  projectId: process.env.PROJECT_ID,
+  apiKey: "AIzaSyBhWy_Lwyrr4isMoItVw07izKH7-0RKpMM",
+  authDomain: "whatsapp-16bff.firebaseapp.com",
+  projectId: "whatsapp-16bff",
   storageBucket: process.env.STORAGE_BUCKET,
   messagingSenderId: process.env.MESSAGING_SENDER_ID,
   appId: process.env.APP_ID,
