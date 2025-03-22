@@ -3,6 +3,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import './AddUserPopup.css';
 
+
 const AddUserPopup = ({ isOpen, onClose, onAddUser }) => {
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
