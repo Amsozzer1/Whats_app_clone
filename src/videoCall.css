@@ -1,0 +1,100 @@
+/* Base styling for the video call UI */
+body,
+html {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  font-family: sans-serif;
+}
+
+.str-video {
+  background-color: #272a30;
+  color: #ffffff;
+  height: 100vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  max-width: 100%;
+  z-index: 1000000;
+}
+
+/* Loading and error states */
+.call-loading,
+.call-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  text-align: center;
+  padding: 20px;
+  background-color: #272a30;
+  color: white;
+}
+
+.call-error {
+  color: #ff4d4f;
+}
+
+/* Safe custom controls styling */
+.safe-controls {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  padding: 16px;
+  background-color: rgba(0, 0, 0, 0.5);
+  position: absolute;
+  bottom: 16px;
+  left: 0;
+  right: 0;
+  z-index: 10;
+}
+
+.control-button {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 4px;
+  background-color: #1890ff;
+  color: white;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: 80px;
+}
+
+.control-button:hover {
+  opacity: 0.9;
+}
+
+.control-button.off {
+  background-color: #595959;
+}
+
+.leave-button {
+  background-color: #ff4d4f !important;
+}
+
+.leave-button:hover {
+  background-color: #ff7875 !important;
+}
+
+/* Mobile fixes */
+@media only screen and (max-width: 768px) {
+  .safe-controls {
+    padding-bottom: 24px;
+  }
+  
+  .control-button {
+    padding: 8px 12px;
+    font-size: 14px;
+    min-width: 70px;
+  }
+}
+
+/* iOS Safari viewport height fix */
+@supports (-webkit-touch-callout: none) {
+  .str-video {
+    height: -webkit-fill-available;
+  }
+}

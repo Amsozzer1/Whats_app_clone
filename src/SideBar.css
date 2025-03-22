@@ -1,0 +1,80 @@
+.bar{
+    height: 100svh;
+    transition: width 0.3s ease;
+    width:60px;
+    background-color: #2a3942;    
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding-bottom: 10px;
+    padding-top:    10px;
+    align-items: center;
+}
+.col{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 10px;
+}
+.btn-sideBar{
+    background-color: transparent;
+    height: 45px;
+    width:  45px;
+    border-radius: 50%;
+    border-color: transparent;
+}
+.icon-style{
+    border-radius:'50%';
+    color:'black';
+    height:'90%';
+    width:'90%';
+    color: white;
+}
+@media (width < 600px) {
+    .bar{
+        width: 0px;
+        overflow: hidden;
+    }
+    
+}
+/* SideBar.css - Add these styles */
+
+.settings-drawer {
+    width: 250px;
+    background-color: #111b21;
+    color: #e9edef;
+    height: 100%;
+  }
+  
+  .settings-header {
+    padding: 16px;
+    background-color: #202c33;
+  }
+  
+  .settings-header .MuiListItemText-primary {
+    font-weight: bold;
+    font-size: 1.1rem;
+  }
+  
+  .MuiListItem-button {
+    padding: 12px 16px;
+    transition: background-color 0.2s;
+  }
+  
+  .MuiListItem-button:hover {
+    background-color: #202c33 !important;
+  }
+  
+  .MuiListItemIcon-root {
+    color: #8696a0 !important;
+    min-width: 40px !important;
+  }
+  
+  .MuiDivider-root {
+    background-color: #222d34 !important;
+  }
+  
+  .delete-account .MuiListItemIcon-root, 
+  .delete-account .MuiListItemText-primary {
+    color: #f15c6d !important;
+  }

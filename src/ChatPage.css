@@ -1,0 +1,172 @@
+.Page{
+    height: 100svh;
+    width: 100%;
+    background-image: url('./BG.jpg');
+    justify-content:end;
+    display: flex;
+    gap: 5px;
+    flex-direction: column;
+    position: relative;
+    /* overflow-x:scroll */
+}
+.chat-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow-y: scroll;
+    padding: 10px;
+    position: relative;
+    padding-bottom: 100px;
+    top:80px;
+  }
+  
+  
+  /* For auto-scrolling to the most recent message */
+  .chat-container .chat-message:last-child {
+    margin-bottom: 8px;
+  }
+  
+  /* Style the scrollbar */
+  .chat-container::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .chat-container::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+  }
+  
+  .chat-container::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+  }
+  
+  .chat-container::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+  }
+
+  .chat-message {
+    position: relative;
+    background-color: #075E54; /* Dark teal/green color similar to WhatsApp */
+    color: white;
+    padding: 10px 12px;
+    max-width: 70%;
+    margin-bottom: 8px;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* For sent messages (right-aligned) */
+  .chat-message.received {
+    background-color: #075E54; /* WhatsApp dark green color */
+    margin-left: auto;
+    margin-right: 10px;
+    border-radius: 8px 0px 8px 8px;
+    
+  }
+  
+  /* For received messages (left-aligned) */
+  .chat-message.sent {
+    background-color: #22303C; /* Dark blue-gray color */
+    margin-right: auto;
+    margin-left: 10px;
+    border-radius: 0 8px 8px 8px;
+  }
+  
+  /* Time stamp styling */
+  .timestamp {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.7);
+    float: right;
+    margin-top: 4px;
+    margin-left: 8px;
+  }
+  /* Add "tail" to sent messages */
+/* Right-angled triangle "tail" for sent messages */
+.chat-message.received::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: -10px;
+    width: 10px;
+    height: 15px;
+    background-color: #075E54; /* Match message background color */
+    clip-path: polygon(0 0, 0 100%, 100% 0);
+  }
+  
+  /* Right-angled triangle "tail" for received messages */
+  .chat-message.sent::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -10px;
+    width: 10px;
+    height: 15px;
+    background-color: #22303C; /* Match message background color */
+    clip-path: polygon(100% 0, 100% 100%, 0 0);
+  }
+  .text-input-bar {
+    /* position: relative; */
+    z-index: 1000;
+    margin-top: 20px;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 10px;
+    background-color: #1E2428;
+    border-top: 1px solid #3C4247;
+  }
+  
+  .input-form {
+    display: flex;
+    align-items: center;
+  }
+  
+  .input-container {
+    display: flex;
+    align-items: center;
+    background-color: #33383B;
+    border-radius: 20px;
+    padding: 5px 10px;
+    flex-grow: 1;
+    margin-right: 10px;
+  }
+  
+  .message-input {
+    border: none;
+    background-color: transparent;
+    padding: 8px 10px;
+    color: white;
+    flex-grow: 1;
+    font-size: 15px;
+    outline: none;
+  }
+  
+  .message-input::placeholder {
+    color: #8A8D91;
+  }
+  
+  .emoji-button, .attachment-button {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: #8A8D91;
+    padding: 5px;
+  }
+  
+  .send-button {
+    background-color: #00A884;
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+  
+  .send-button svg {
+    width: 20px;
+    height: 20px;
+  }
