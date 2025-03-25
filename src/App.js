@@ -43,7 +43,7 @@ export default function App(){
 
     async function handleChatClear() {
       try {
-        const response = await fetch(`http://localhost:3006/clearChats?collection=${user?.uid}`, {
+        const response = await fetch(`${BASE_BACK_URL}/clearChats?collection=${user?.uid}`, {
           method: 'DELETE'
         });
         const result = await response.json();
@@ -59,7 +59,7 @@ export default function App(){
     
     async function deleteUser() {
       try {
-        const response = await fetch(`http://localhost:3006/deleteUser?userId=${user?.uid}`, {
+        const response = await fetch(`${BASE_BACK_URL}/deleteUser?userId=${user?.uid}`, {
           method: 'DELETE'
         });
         const result = await response.json();
@@ -81,11 +81,23 @@ export default function App(){
         // console.log(chatUser);
       }
 
+      function updateAllChat(chatUpdatedFor, message) {
+        return allChats.map(chat => {
+          if (chat.id === chatUpdatedFor) {
+            // Create a copy of the chat object
+            const updatedChat = { ...chat };
+            // Add the message to data.chat
+            updatedChat.data.chat.push(message);
+            return updatedChat;
+          }
+          return chat;
+        });
+      }
+
       // useEffect(() => {
       //   console.log('onCall value changed:', user?.displayName);
       // }, [user]);
 
-      
       useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (user1) => {
           if (user1) {
@@ -180,12 +192,16 @@ export default function App(){
             chats={allChats} 
             handleOnClick={updateChats} 
             user={user}
+            handleLogout={handleLogout} 
+            handleChatClear={handleChatClear} 
+            deleteUser={deleteUser}
           />
         </div>
         <div style={{ 
           flex: 1  // This will make it take up the remaining space
         }}>
           <ChatPage 
+          updateAllChat={updateAllChat}
           setIsAddUserOpen={setIsAddUserOpen}
           isAddUserOpen={isAddUserOpen}
             handleOnClick={updateChats} 
@@ -196,16 +212,36 @@ export default function App(){
             user={user} 
             onCall={()=>setOnCall(true)} 
             showOutGoing={()=>{setShowOutGoing(true)}}
+            allChats={allChats}
+            setAllChats={setAllChats}
+
+            
+            // handleLogout,handleChatClear,deleteUser
           />
         </div>
       </div>:
         !back?
           <ChatPage
+          updateAllChat={updateAllChat}
+          allChats={allChats}
+          setAllChats={setAllChats}
           setIsAddUserOpen={setIsAddUserOpen}
           isAddUserOpen={isAddUserOpen}
-          handleOnClick={updateChats} handleBack={handleBack} chat={currChat} currChatUser={currChatUser} currChatUserID={currChatUserID} user={user} onCall={()=>setOnCall(true)} showOutGoing={()=>{setShowOutGoing(true)}}/>
+          handleOnClick={updateChats} 
+          handleBack={handleBack} 
+          chat={currChat} 
+          currChatUser={currChatUser} 
+          currChatUserID={currChatUserID} 
+          user={user} 
+          onCall={()=>setOnCall(true)} 
+          showOutGoing={()=>{setShowOutGoing(true)}}
+          // handleLogout={handleLogout} handleChatClear={handleChatClear} deleteUser={deleteUser}
+          />
             :
           <ChatScroll
+          handleLogout={handleLogout} 
+            handleChatClear={handleChatClear} 
+            deleteUser={deleteUser}
           setIsAddUserOpen={setIsAddUserOpen} isAddUserOpen={isAddUserOpen}
           handleBack={handleBack} chats={allChats} handleOnClick={updateChats} user={user}/>
       }

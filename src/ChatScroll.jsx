@@ -8,7 +8,10 @@ import MoreVertIcon from '@mui/icons-material/MoreVert';
 import AddCommentIcon from '@mui/icons-material/AddComment';
 import AddUserPopup from './addUser';
 import SettingsMenu from './settingsMenu';
-
+import { Drawer } from '@mui/material';
+import ChatIcon from '@mui/icons-material/Chat';
+import SettingsIcon from '@mui/icons-material/Settings';
+// import SettingsMenu from './settingsMenu';
 function ChatBar({ chat, handleCurrChat, userUID, handleBack }) {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -94,13 +97,22 @@ function ChatBar({ chat, handleCurrChat, userUID, handleBack }) {
         </div>
         <div className='chat-info-bottom'>
           <p className='chat-preview'>{getLastMessagePreview()}</p>
+          
         </div>
       </div>
     </div>
   );
 }
 
-function Header() {
+function Header({handleLogout,handleChatClear,deleteUser}) {
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  
+  const toggleDrawer = (open) => (event) => {
+    if (event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
+      return;
+    }
+    setIsDrawerOpen(open);
+  };
   return(
     <div className='sidebar-header'>
       <div className='sidebar-header-left'>
@@ -108,13 +120,28 @@ function Header() {
       </div>
       <div className='sidebar-header-actions'>
         {/* <button className='header-btn'><SearchIcon /></button> */}
-        <button className='header-btn'><MoreVertIcon /></button>
+        <button className='header-btn'
+          onClick={()=>setIsDrawerOpen(!isDrawerOpen)}
+        
+        ><MoreVertIcon /></button>
       </div>
+      <Drawer
+          anchor="right"
+          open={isDrawerOpen}
+          onClose={()=>setIsDrawerOpen(!isDrawerOpen)}
+        >
+          <SettingsMenu 
+            onClose={()=>setIsDrawerOpen(!isDrawerOpen)}
+            onClearChat={handleChatClear}
+            handleLogout={handleLogout}
+            onDeleteAccount={deleteUser}
+          />
+        </Drawer>
     </div>
   );
 }
 
-function ChatScroll({ chats, handleOnClick, user, handleBack ,setIsAddUserOpen,isAddUserOpen}) {
+function ChatScroll({ chats, handleOnClick, user, handleBack ,setIsAddUserOpen,isAddUserOpen,handleLogout,handleChatClear,deleteUser}) {
   const [results, setResults] = useState([]);
   const [searchInput, setSearchInput] = useState('');
   const [chatUsers, setChatUsers] = useState({});
@@ -285,7 +312,9 @@ function ChatScroll({ chats, handleOnClick, user, handleBack ,setIsAddUserOpen,i
 
   return (
     <div className='chat-scroll-container'>
-      <Header />
+      <Header 
+      handleLogout={handleLogout} handleChatClear={handleChatClear} deleteUser={deleteUser}
+      />
       <div className='search-container'>
         <div className='search-input-wrapper'>
           <SearchIcon className='search-icon' />

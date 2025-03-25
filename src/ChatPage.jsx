@@ -48,7 +48,7 @@ const TextInputBar = ({ onSendMessage }) => {
     );
   };
   
-function ChatPage({handleOnClick,handleBack,chat,currChatUser,currChatUserID,user,onCall,showOutGoing,setIsAddUserOpen,isAddUserOpen}){
+function ChatPage({updateAllChat,setAllChats,allChats,handleOnClick,handleBack,chat,currChatUser,currChatUserID,user,onCall,showOutGoing,setIsAddUserOpen,isAddUserOpen}){
     const messagesEndRef = useRef(null);
     const [TextChain,setTextChain] = useState(chat);
     const { initiateCall, connected,sendMessage,messages } = useWebSocket();
@@ -68,14 +68,20 @@ function ChatPage({handleOnClick,handleBack,chat,currChatUser,currChatUserID,use
   },[chat]);
  
 useEffect(() => {
+  console.log(currChatUserID);
   // Check if user exists and if there are messages for this user
-  if (user?.uid && messages[user.uid]) {
+  if (user?.uid && messages[currChatUserID]) {
     // Create a new array with all current messages for this user
-    setTextChain(prevChain => [...prevChain, ...messages[user.uid]]);
+    // console.log(messages[user.uid]);
+    
+    setTextChain(prevChain => [...prevChain, ...messages[currChatUserID]]);
     
     // console.log("MESSAGES:", messages[user.uid]);
   }
-}, [messages, user?.uid]);
+  else{
+    // console.log(updateAllChat(currChatUserID,messages[currChatUserID]));
+  }
+}, [messages, user?.uid,allChats]);
 
     function CreateTimeStamp(){
         var AM = 'AM'
@@ -93,7 +99,7 @@ useEffect(() => {
     function sendMessageChat(text){
 
         let newText = {
-            "sender": "user1",
+            "sender": user?.uid,
             "message": text,
             "timestamp": CreateTimeStamp(),
             "isUser": true

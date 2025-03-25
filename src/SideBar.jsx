@@ -9,12 +9,13 @@ import SettingsMenu from './settingsMenu';
 
 function SideBar({ User,handleLogout,handleChatClear,deleteUser }) {
   const [userAvatar, setUserAvatar] = useState(DummyImage);
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   useEffect(() => {
     setUserAvatar(User.photoURL);
   }, [User]);
 
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  
   const toggleDrawer = (open) => (event) => {
     if (event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
       return;
