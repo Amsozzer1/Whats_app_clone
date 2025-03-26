@@ -2,8 +2,7 @@
 
 A modern real-time messaging application built with React that replicates core WhatsApp functionality with additional video calling features.
 
-[WhatsApp Clone](https://whatsapp-16bff.firebaseapp.com/)
-
+![WhatsApp Clone Screenshot](https://your-screenshot-link-here.png)
 
 ## Features
 

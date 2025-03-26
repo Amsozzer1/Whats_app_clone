@@ -36,40 +36,6 @@ export default function App(){
 
 
       const [accepted,setAccepted] = useState(false);
-
-    function handleLogout(){
-      signOut(auth);
-    }
-
-    async function handleChatClear() {
-      try {
-        const response = await fetch(`http://localhost:3006/clearChats?collection=${user?.uid}`, {
-          method: 'DELETE'
-        });
-        const result = await response.json();
-        if (result.success){
-          window.location.reload();
-        }
-        return result.success;
-      } catch (error) {
-        console.error('Error clearing chat:', error);
-        return false;
-      }
-    }
-    
-    async function deleteUser() {
-      try {
-        const response = await fetch(`http://localhost:3006/deleteUser?userId=${user?.uid}`, {
-          method: 'DELETE'
-        });
-        const result = await response.json();
-        return result.success;
-      } catch (error) {
-        console.error('Error deleting user:', error);
-        return false;
-      }
-    }
-
       function handleCallAccept(callid){
         setAccepted(true);
         // setCallID(callid);
@@ -149,7 +115,7 @@ export default function App(){
       
     }}>
       {/* <div id="recaptcha-container"></div> */}
-      <SideBar User={user} handleLogout={handleLogout} handleChatClear={handleChatClear} deleteUser={deleteUser}/>
+      <SideBar User={user}/>
       {/* <div style={{width:400,height:100}}><p style={{color:'white'}}>accepted:{accepted?'yes':'no'}</p></div> */}
 
       {/* <div
