@@ -1,5 +1,5 @@
 // ChatBar.jsx
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState,useRef } from 'react';
 import './Chat.css';
 import DummyAvatar from './Untitled.jpeg';
 import BASE_BACK_URL from './URL';
@@ -11,11 +11,14 @@ import SettingsMenu from './settingsMenu';
 import { Drawer } from '@mui/material';
 import ChatIcon from '@mui/icons-material/Chat';
 import SettingsIcon from '@mui/icons-material/Settings';
+import { useWebSocket } from './WebSocket';
+
+
 // import SettingsMenu from './settingsMenu';
 function ChatBar({ chat, handleCurrChat, userUID, handleBack }) {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-
+  
   async function getUserByID(uid) {
     try {
       const response = await fetch(`${BASE_BACK_URL}/getUser?userId=${uid}`);
@@ -71,7 +74,7 @@ function ChatBar({ chat, handleCurrChat, userUID, handleBack }) {
       ? lastMessage.message.substring(0, 27) + '...' 
       : lastMessage.message;
   };
-
+  
   return (
     <div className='chat-bar' onClick={() => {
       handleCurrChat(chat.data.userId, chat.data.chat, chat.id);
@@ -141,12 +144,135 @@ function Header({handleLogout,handleChatClear,deleteUser}) {
   );
 }
 
-function ChatScroll({ chats, handleOnClick, user, handleBack ,setIsAddUserOpen,isAddUserOpen,handleLogout,handleChatClear,deleteUser}) {
+function ChatScroll({ setAllChats,allChats,chats, handleOnClick, user, handleBack ,setIsAddUserOpen,isAddUserOpen,handleLogout,handleChatClear,deleteUser}) {
   const [results, setResults] = useState([]);
   const [searchInput, setSearchInput] = useState('');
   const [chatUsers, setChatUsers] = useState({});
   const [isLoadingUsers, setIsLoadingUsers] = useState(false);
+  const { initiateCall, connected, sendMessage, messages, setMessages } = useWebSocket();
+  
+  // Add a ref to track which messages we've already processed
+  const processedMessagesRef = useRef({});
 
+  function constructMessage(obj) {
+    let NewMessage = {
+      isUser: false,
+      message: obj.message,
+      sender: obj.sender,
+      timestamp: "5:43 PM"
+    }
+    return NewMessage;
+  }
+  
+  function updateChats(chats, newId, newData) {
+    const existingChatIndex = chats.findIndex(chat => chat.id === newId);
+    
+    if (existingChatIndex >= 0) {
+      return chats.map(chat => 
+        chat.id === newId ? { ...chat, data: newData } : chat
+      );
+    } else {
+      return [...chats, { id: newId, data: newData }];
+    }
+  }
+  
+  // Updated function to prevent duplicate messages
+  function handleMessages(messages, allChats, setAllChats, setMessages) {
+    // If no messages, do nothing
+    if (!messages || Object.keys(messages).length === 0) return;
+    
+    // Create a new array to avoid mutating the original
+    const updatedAllChats = [...allChats];
+    let hasChanges = false;
+    const messagesToRemove = [];
+    
+    for (const messageId in messages) {
+      // Create a fingerprint of current messages to check for duplicates
+      const messageFingerprint = JSON.stringify(messages[messageId]);
+      
+      // Skip if we've already processed this exact batch of messages
+      if (processedMessagesRef.current[messageId] === messageFingerprint) {
+        continue;
+      }
+      
+      // Find the matching chat by ID
+      let matchingChatIndex = -1;
+      for (let j = 0; j < updatedAllChats.length; j++) {
+        if (updatedAllChats[j].id == messageId) {
+          matchingChatIndex = j;
+          break;
+        }
+      }
+      
+      // Skip if no matching chat was found
+      if (matchingChatIndex === -1) continue;
+      
+      // Get a reference to the chat
+      const matchingChat = updatedAllChats[matchingChatIndex];
+      
+      // Initialize the data structure if it doesn't exist
+      if (!matchingChat.data) {
+        matchingChat.data = {};
+      }
+      
+      if (!matchingChat.data.chat) {
+        matchingChat.data.chat = [];
+      }
+      
+      // Get the message array
+      const messageArray = messages[messageId];
+      
+      if (messageArray && messageArray.length > 0) {
+        // Process all messages for this chat
+        for (let i = 0; i < messageArray.length; i++) {
+          if (messageArray[i]) {
+            matchingChat.data.chat.push(constructMessage(messageArray[i]));
+            hasChanges = true;
+          }
+        }
+        
+        // Save this fingerprint so we don't process it again
+        processedMessagesRef.current[messageId] = messageFingerprint;
+        
+        // Mark this messageId for removal from the messages state
+        messagesToRemove.push(messageId);
+      }
+    }
+    
+    // Update allChats if changes were made
+    if (hasChanges && setAllChats) {
+      setAllChats(updatedAllChats);
+    }
+    
+    // Clear the processed messages from the messages state
+    if (messagesToRemove.length > 0 && setMessages) {
+      setMessages(prevMessages => {
+        const newMessages = {...prevMessages};
+        
+        // Remove the processed message IDs
+        messagesToRemove.forEach(id => {
+          delete newMessages[id];
+        });
+        
+        return newMessages;
+      });
+    }
+    
+    return updatedAllChats;
+  }
+  
+  // Updated useEffect to clean up the ref when component unmounts
+  useEffect(() => {
+    if (Object.keys(messages).length > 0) {
+      handleMessages(messages, allChats, setAllChats, setMessages);
+    }
+    
+    // Clean up function to reset the ref when component unmounts
+    return () => {
+      processedMessagesRef.current = {};
+    };
+  }, [messages, allChats, setAllChats, setMessages]);
+  
   // Function to get user by ID - use the same one from ChatBar
   async function getUserByID(uid) {
     try {

@@ -195,6 +195,8 @@ export default function App(){
             handleLogout={handleLogout} 
             handleChatClear={handleChatClear} 
             deleteUser={deleteUser}
+            allChats={allChats}
+            updateAllChat={setAllChats}
           />
         </div>
         <div style={{ 
@@ -239,6 +241,8 @@ export default function App(){
           />
             :
           <ChatScroll
+          allChats={allChats}
+            setAllChats={setAllChats}
           handleLogout={handleLogout} 
             handleChatClear={handleChatClear} 
             deleteUser={deleteUser}
