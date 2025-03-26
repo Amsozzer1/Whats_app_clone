@@ -21,8 +21,7 @@ const auth = getAuth();
 const provider = new GoogleAuthProvider();
 
 export default function App(){
-   
-  
+
       const [currChat,setCurrChat] = useState([]);
       const [currChatUser,setCurrChatUser] = useState("");
       const [currChatUserID,setCurrChatUserID] = useState("");
@@ -74,12 +73,13 @@ export default function App(){
         setAccepted(true);
         // setCallID(callid);
       }
-      function updateChats(chatUser,currChat,ChatUserID){
-        setCurrChatUser(chatUser);
-        setCurrChat(currChat);
-        setCurrChatUserID(ChatUserID);
-        // console.log(chatUser);
-      }
+  function updateChats(chatUser,currChat,ChatUserID){
+    setCurrChatUser(chatUser);
+    setCurrChat(currChat);
+    setCurrChatUserID(ChatUserID);
+    console.log("currChat:",currChat);
+    // console.log(chatUser);
+  }
 
       function updateAllChat(chatUpdatedFor, message) {
         return allChats.map(chat => {
@@ -93,39 +93,43 @@ export default function App(){
           return chat;
         });
       }
+const fetchUserChats = async (user) => {
+  if (!user) return;
+  
+  try {
+    const response = await fetch(`${BASE_BACK_URL}/getChats?CollectionName=${user.uid}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    setAllChats(data.documents);
+    return data.documents;
+  } catch (error) {
+    console.error("Error fetching chats:", error);
+    return [];
+  }
+};
 
-      // useEffect(() => {
-      //   console.log('onCall value changed:', user?.displayName);
-      // }, [user]);
-
-      useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, (user1) => {
-          if (user1) {
-            setUser(user1);
-
-            
-            fetch(BASE_BACK_URL+"/getChats?CollectionName="+user1.uid,
-              {
-                method:'GET',
-                headers:{
-                  'Content-Type': 'application/json'
-                }
-              }
-            )
-            .then((res)=>res.json())
-            .then(data=>{
-              setAllChats(data.documents)
-              // console.log(data.documents[0].data.chat);
-            })  
-            .catch(error=> console.error(error))
-
-          } else {
-            setUser(null);
-          }
-        });
-        
-        return () => unsubscribe();
-      }, [auth]);
+// Usage in your component
+useEffect(() => {
+  const unsubscribe = onAuthStateChanged(auth, (user1) => {
+    if (user1) {
+      setUser(user1);
+      fetchUserChats(user1, setAllChats);
+    } else {
+      setUser(null);
+    }
+  });
+  
+  return () => unsubscribe();
+}, [auth]);
 
     function SignUp(){
       signInWithPopup(auth, provider)
@@ -185,7 +189,9 @@ export default function App(){
           maxWidth: '400px',
           minWidth: '280px'  // Adding a minimum width for usability
         }}>
-          <ChatScroll 
+          <ChatScroll
+          setCurrChat={setCurrChat}
+          fetchUserChats={fetchUserChats}
           setIsAddUserOpen={setIsAddUserOpen}
           isAddUserOpen={isAddUserOpen}
             handleBack={handleBack} 
@@ -197,12 +203,15 @@ export default function App(){
             deleteUser={deleteUser}
             allChats={allChats}
             updateAllChat={setAllChats}
+            currUser = {currChatUserID}
           />
         </div>
         <div style={{ 
           flex: 1  // This will make it take up the remaining space
         }}>
           <ChatPage 
+          fetchUserChats={fetchUserChats}
+          split_screen={false}
           updateAllChat={updateAllChat}
           setIsAddUserOpen={setIsAddUserOpen}
           isAddUserOpen={isAddUserOpen}
@@ -217,13 +226,13 @@ export default function App(){
             allChats={allChats}
             setAllChats={setAllChats}
 
-            
-            // handleLogout,handleChatClear,deleteUser
           />
         </div>
       </div>:
         !back?
           <ChatPage
+          split_screen={false}
+          fetchUserChats={fetchUserChats}
           updateAllChat={updateAllChat}
           allChats={allChats}
           setAllChats={setAllChats}
@@ -241,6 +250,10 @@ export default function App(){
           />
             :
           <ChatScroll
+          currUser = {currChatUserID}
+
+          setCurrChat={setCurrChat}
+          fetchUserChats={fetchUserChats}
           allChats={allChats}
             setAllChats={setAllChats}
           handleLogout={handleLogout} 

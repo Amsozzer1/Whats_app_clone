@@ -15,7 +15,7 @@ import { useWebSocket } from './WebSocket';
 
 
 // import SettingsMenu from './settingsMenu';
-function ChatBar({ chat, handleCurrChat, userUID, handleBack }) {
+function ChatBar({ setCurrChat,chat, handleCurrChat, userUID, handleBack,currChatUserID }) {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   
@@ -45,7 +45,9 @@ function ChatBar({ chat, handleCurrChat, userUID, handleBack }) {
       loadUser();
     }
   }, [userUID]);
-
+  useEffect(()=>{
+    console.log("CHAT:",chat)
+  },[chat])
   // Calculate how long ago the last message was sent
   const getLastMessageTime = () => {
     if (!chat?.data?.timestamp) return '';
@@ -74,7 +76,14 @@ function ChatBar({ chat, handleCurrChat, userUID, handleBack }) {
       ? lastMessage.message.substring(0, 27) + '...' 
       : lastMessage.message;
   };
-  
+    useEffect(()=>{
+      // console.log("ID:",chat.id)
+      // handleCurrChat(chat.data.userId, chat.data.chat, chat.id);
+      if(chat.data.chat.length>0 && chat.data.userId == currChatUserID){
+      setCurrChat(chat.data.chat)
+      }    
+
+},[chat])
   return (
     <div className='chat-bar' onClick={() => {
       handleCurrChat(chat.data.userId, chat.data.chat, chat.id);
@@ -144,134 +153,18 @@ function Header({handleLogout,handleChatClear,deleteUser}) {
   );
 }
 
-function ChatScroll({ setAllChats,allChats,chats, handleOnClick, user, handleBack ,setIsAddUserOpen,isAddUserOpen,handleLogout,handleChatClear,deleteUser}) {
+
+
+function ChatScroll({ currChatUserID,setCurrChat,fetchUserChats,setAllChats,allChats,chats, handleOnClick, user, handleBack ,setIsAddUserOpen,isAddUserOpen,handleLogout,handleChatClear,deleteUser}) {
   const [results, setResults] = useState([]);
   const [searchInput, setSearchInput] = useState('');
   const [chatUsers, setChatUsers] = useState({});
   const [isLoadingUsers, setIsLoadingUsers] = useState(false);
   const { initiateCall, connected, sendMessage, messages, setMessages } = useWebSocket();
-  
-  // Add a ref to track which messages we've already processed
-  const processedMessagesRef = useRef({});
 
-  function constructMessage(obj) {
-    let NewMessage = {
-      isUser: false,
-      message: obj.message,
-      sender: obj.sender,
-      timestamp: "5:43 PM"
-    }
-    return NewMessage;
-  }
-  
-  function updateChats(chats, newId, newData) {
-    const existingChatIndex = chats.findIndex(chat => chat.id === newId);
-    
-    if (existingChatIndex >= 0) {
-      return chats.map(chat => 
-        chat.id === newId ? { ...chat, data: newData } : chat
-      );
-    } else {
-      return [...chats, { id: newId, data: newData }];
-    }
-  }
-  
-  // Updated function to prevent duplicate messages
-  function handleMessages(messages, allChats, setAllChats, setMessages) {
-    // If no messages, do nothing
-    if (!messages || Object.keys(messages).length === 0) return;
-    
-    // Create a new array to avoid mutating the original
-    const updatedAllChats = [...allChats];
-    let hasChanges = false;
-    const messagesToRemove = [];
-    
-    for (const messageId in messages) {
-      // Create a fingerprint of current messages to check for duplicates
-      const messageFingerprint = JSON.stringify(messages[messageId]);
-      
-      // Skip if we've already processed this exact batch of messages
-      if (processedMessagesRef.current[messageId] === messageFingerprint) {
-        continue;
-      }
-      
-      // Find the matching chat by ID
-      let matchingChatIndex = -1;
-      for (let j = 0; j < updatedAllChats.length; j++) {
-        if (updatedAllChats[j].id == messageId) {
-          matchingChatIndex = j;
-          break;
-        }
-      }
-      
-      // Skip if no matching chat was found
-      if (matchingChatIndex === -1) continue;
-      
-      // Get a reference to the chat
-      const matchingChat = updatedAllChats[matchingChatIndex];
-      
-      // Initialize the data structure if it doesn't exist
-      if (!matchingChat.data) {
-        matchingChat.data = {};
-      }
-      
-      if (!matchingChat.data.chat) {
-        matchingChat.data.chat = [];
-      }
-      
-      // Get the message array
-      const messageArray = messages[messageId];
-      
-      if (messageArray && messageArray.length > 0) {
-        // Process all messages for this chat
-        for (let i = 0; i < messageArray.length; i++) {
-          if (messageArray[i]) {
-            matchingChat.data.chat.push(constructMessage(messageArray[i]));
-            hasChanges = true;
-          }
-        }
-        
-        // Save this fingerprint so we don't process it again
-        processedMessagesRef.current[messageId] = messageFingerprint;
-        
-        // Mark this messageId for removal from the messages state
-        messagesToRemove.push(messageId);
-      }
-    }
-    
-    // Update allChats if changes were made
-    if (hasChanges && setAllChats) {
-      setAllChats(updatedAllChats);
-    }
-    
-    // Clear the processed messages from the messages state
-    if (messagesToRemove.length > 0 && setMessages) {
-      setMessages(prevMessages => {
-        const newMessages = {...prevMessages};
-        
-        // Remove the processed message IDs
-        messagesToRemove.forEach(id => {
-          delete newMessages[id];
-        });
-        
-        return newMessages;
-      });
-    }
-    
-    return updatedAllChats;
-  }
-  
-  // Updated useEffect to clean up the ref when component unmounts
   useEffect(() => {
-    if (Object.keys(messages).length > 0) {
-      handleMessages(messages, allChats, setAllChats, setMessages);
-    }
-    
-    // Clean up function to reset the ref when component unmounts
-    return () => {
-      processedMessagesRef.current = {};
-    };
-  }, [messages, allChats, setAllChats, setMessages]);
+    fetchUserChats(user);
+  }, [messages]);
   
   // Function to get user by ID - use the same one from ChatBar
   async function getUserByID(uid) {
@@ -290,8 +183,9 @@ function ChatScroll({ setAllChats,allChats,chats, handleOnClick, user, handleBac
 
   // Initialize results with all chats when component mounts or chats change
   useEffect(() => {
-    setResults(chats);
-  }, [chats]);
+    setResults(allChats);
+    console.log("RESULTS: ",results)
+  }, [allChats]);
 
   // Fetch user data for all chats to use in search
   useEffect(() => {
@@ -326,14 +220,14 @@ function ChatScroll({ setAllChats,allChats,chats, handleOnClick, user, handleBac
     
     if (!input || input.trim() === '') {
       // If search input is empty, show all chats
-      setResults(chats);
+      setResults(allChats);
       return;
     }
     
     const searchTerm = input.toLowerCase().trim();
     
     // Filter chats by user display name
-    const filteredChats = chats.filter(chat => {
+    const filteredChats = allChats.filter(chat => {
       // Skip current user's chat
       if (chat.id === user.uid) {
         return false;
@@ -346,9 +240,13 @@ function ChatScroll({ setAllChats,allChats,chats, handleOnClick, user, handleBac
       return chatUser?.displayName?.toLowerCase().includes(searchTerm);
     });
     
-    setResults(filteredChats);
+    // setResults(filteredChats);
   }
-
+  useEffect(()=>{
+    // console.log("YESSS");
+    setResults(allChats);
+    // console.log("REAL",results)
+  },[allChats])
   const handleAddUser = async ({ email, name }) => {
     try {
       // Step 1: Get all users from the endpoint
@@ -383,23 +281,23 @@ function ChatScroll({ setAllChats,allChats,chats, handleOnClick, user, handleBac
       }
       
       // Optional: You could refresh your chat list here
-      setResults([...results, {
-        id: addedUid, // This should be the added user's ID, not the current user's ID
-        data: {
-          chat: [],
-          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          userId: name
-        }
-      }]);
+      // setResults([...results, {
+      //   id: addedUid, // This should be the added user's ID, not the current user's ID
+      //   data: {
+      //     chat: [],
+      //     timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      //     userId: name
+      //   }
+      // }]);
       return true;
     } catch (error) {
       console.error('Error adding user:', error);
       throw error;
     }
   };
-  useEffect(() => {
-    console.log('Results updated:', results);
-  }, [results]);
+  // useEffect(() => {
+  //   console.log('Results updated:', results);
+  // }, [results]);
 
   // If no chats or filtered results are empty, show empty state
   if (!results || results.length === 0) {
@@ -467,11 +365,13 @@ function ChatScroll({ setAllChats,allChats,chats, handleOnClick, user, handleBac
             return (
               `${user.uid}` !== chat.id ? (
                 <ChatBar 
+                setCurrChat={setCurrChat}
                   handleBack={handleBack} 
                   key={idx} 
                   chat={chat} 
                   handleCurrChat={handleOnClick} 
                   userUID={chat.id}
+                  currChatUserID={currChatUserID}
                 />
               ) : null
             );

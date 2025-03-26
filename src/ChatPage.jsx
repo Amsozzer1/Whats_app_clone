@@ -48,7 +48,7 @@ const TextInputBar = ({ onSendMessage }) => {
     );
   };
 
-function ChatPage({updateAllChat,setAllChats,allChats,handleOnClick,handleBack,chat,currChatUser,currChatUserID,user,onCall,showOutGoing,setIsAddUserOpen,isAddUserOpen}){
+function ChatPage({split_screen,updateAllChat,setAllChats,allChats,handleOnClick,handleBack,chat,currChatUser,currChatUserID,user,onCall,showOutGoing,setIsAddUserOpen,isAddUserOpen}){
     const messagesEndRef = useRef(null);
     const [TextChain,setTextChain] = useState(chat);
     const { initiateCall, connected,sendMessage,messages,setMessages } = useWebSocket();
@@ -165,13 +165,17 @@ function ChatPage({updateAllChat,setAllChats,allChats,handleOnClick,handleBack,c
   
 
   useEffect(() => {
-    if (Object.keys(messages).length > 0) {
-      handleMessages(messages, allChats, setAllChats, setMessages);
-    }
-    return () => {
-      processedMessagesRef.current = {};
-    };
-  }, [messages, allChats, setAllChats, setMessages]);
+  //   if(!split_screen){
+  //   if (Object.keys(messages).length > 0) {
+  //     handleMessages(messages, allChats, setAllChats, setMessages);
+  //   }
+  //   return () => {
+  //     processedMessagesRef.current = {};
+  //   };
+  // }
+    // fetchUserChats(user);
+
+  }, [messages]);
 // useEffect(() => {
   
 //   if (user?.uid && messages[currChatUserID]) {
