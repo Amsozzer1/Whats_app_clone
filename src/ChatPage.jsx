@@ -51,7 +51,7 @@ const TextInputBar = ({ onSendMessage }) => {
 function ChatPage({updateAllChat,setAllChats,allChats,handleOnClick,handleBack,chat,currChatUser,currChatUserID,user,onCall,showOutGoing,setIsAddUserOpen,isAddUserOpen}){
     const messagesEndRef = useRef(null);
     const [TextChain,setTextChain] = useState(chat);
-    const { initiateCall, connected,sendMessage,messages } = useWebSocket();
+    const { initiateCall, connected,sendMessage,messages,setMessages } = useWebSocket();
 
   
   const scrollToBottom = () => {
@@ -79,7 +79,28 @@ useEffect(() => {
     // console.log("MESSAGES:", messages[user.uid]);
   }
   else{
-    // console.log(updateAllChat(currChatUserID,messages[currChatUserID]));
+    // let newArr = [];
+    // let ref = null;
+    
+    // for(let i in messages){
+
+    //   let NewMessage = {
+    //     isUser: false,
+    //     message: messages[i].message,
+    //     sender: messages[i].sender,
+    //     timestamp: "5:43 PM"
+    //   }
+    //   // if messages
+    //   console.log(i);
+    //   for(let j in allChats){
+    //     if(allChats[j].id == i){
+    //       ref = Object.assign({}, allChats[j]);;
+    //     }
+    //   }
+    //   ref.data.chat.push(NewMessage)
+    //   // console.log([...allChats,{id:i,data:ref}])
+    //   console.log(messages[i])
+    // }
   }
 }, [messages, user?.uid,allChats]);
 

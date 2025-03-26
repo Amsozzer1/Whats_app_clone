@@ -106,7 +106,7 @@ useEffect(() => {
           if(data.type=="message_sent"){
             // const [messages,setMessages] = useState({});
 
-            if (data.receiver in messages) {
+            if (data.sender in messages) {
               setMessages(prevMessages => ({
                 ...prevMessages,
                 [data.sender]: [...prevMessages[data.sender], data.message]
@@ -216,6 +216,7 @@ useEffect(() => {
     initiateCall,
     respondToCall,
     clearIncomingCall,
+    setMessages,
     cancelCall, // Add this
   };
   
