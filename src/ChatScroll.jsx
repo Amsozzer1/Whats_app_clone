@@ -15,9 +15,11 @@ import { useWebSocket } from './WebSocket';
 
 
 // import SettingsMenu from './settingsMenu';
-function ChatBar({ setCurrChat,chat, handleCurrChat, userUID, handleBack,currChatUserID }) {
+function ChatBar({ UpdateResultsAfterChat,setCurrChat,chat, handleCurrChat, userUID, handleBack,currID }) {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const { initiateCall, connected,sendMessage,messages,setMessages } = useWebSocket();
+
   
   async function getUserByID(uid) {
     try {
@@ -46,7 +48,7 @@ function ChatBar({ setCurrChat,chat, handleCurrChat, userUID, handleBack,currCha
     }
   }, [userUID]);
   useEffect(()=>{
-    console.log("CHAT:",chat)
+    // console.log("CHAT:",chat)
   },[chat])
   // Calculate how long ago the last message was sent
   const getLastMessageTime = () => {
@@ -77,13 +79,13 @@ function ChatBar({ setCurrChat,chat, handleCurrChat, userUID, handleBack,currCha
       : lastMessage.message;
   };
     useEffect(()=>{
-      // console.log("ID:",chat.id)
-      // handleCurrChat(chat.data.userId, chat.data.chat, chat.id);
-      if(chat.data.chat.length>0 && chat.data.userId == currChatUserID){
-      setCurrChat(chat.data.chat)
-      }    
+      var ref = chat
+      ref.data.chat.concat(messages[chat.id]);
+      const newChatData = [...chat.data.chat, messages[chat.id]];
+        UpdateResultsAfterChat(chat.id, newChatData);
 
-},[chat])
+      console.log("THIS",ref.data.chat.concat(messages[chat.id]),messages[chat.id]);
+    },[messages])
   return (
     <div className='chat-bar' onClick={() => {
       handleCurrChat(chat.data.userId, chat.data.chat, chat.id);
@@ -153,9 +155,7 @@ function Header({handleLogout,handleChatClear,deleteUser}) {
   );
 }
 
-
-
-function ChatScroll({ currChatUserID,setCurrChat,fetchUserChats,setAllChats,allChats,chats, handleOnClick, user, handleBack ,setIsAddUserOpen,isAddUserOpen,handleLogout,handleChatClear,deleteUser}) {
+function ChatScroll({setCurrChat, currID,fetchUserChats,setAllChats,allChats,chats, handleOnClick, user, handleBack ,setIsAddUserOpen,isAddUserOpen,handleLogout,handleChatClear,deleteUser}) {
   const [results, setResults] = useState([]);
   const [searchInput, setSearchInput] = useState('');
   const [chatUsers, setChatUsers] = useState({});
@@ -163,7 +163,21 @@ function ChatScroll({ currChatUserID,setCurrChat,fetchUserChats,setAllChats,allC
   const { initiateCall, connected, sendMessage, messages, setMessages } = useWebSocket();
 
   useEffect(() => {
-    fetchUserChats(user);
+    // Create the async function
+    const getUserChats = async () => {
+      console.log("fetchUserChats(user)", await fetchUserChats(user));
+    };
+    
+    // Set a timeout to delay the execution by 2 seconds (2000 milliseconds)
+    const timeoutId = setTimeout(() => {
+      getUserChats();
+    }, 500);
+    
+    // Return a cleanup function that clears the timeout if the component unmounts
+    // before the timeout completes - this prevents memory leaks
+    return () => {
+      clearTimeout(timeoutId);
+    };
   }, [messages]);
   
   // Function to get user by ID - use the same one from ChatBar
@@ -184,7 +198,6 @@ function ChatScroll({ currChatUserID,setCurrChat,fetchUserChats,setAllChats,allC
   // Initialize results with all chats when component mounts or chats change
   useEffect(() => {
     setResults(allChats);
-    console.log("RESULTS: ",results)
   }, [allChats]);
 
   // Fetch user data for all chats to use in search
@@ -213,8 +226,45 @@ function ChatScroll({ currChatUserID,setCurrChat,fetchUserChats,setAllChats,allC
     
     fetchAllUsers();
   }, [chats, user.uid]);
-
+  // function UpdateResultsAfterChat(chatUser,newChat){
+  //   let newArr=[]
+  //   let update = []
+  //   for(let i in results){
+  //     if(results[i].id==chatUser){
+  //       // newArr.push(i)
+  //       // newArr.push({id:results[i].id,data:newChat});
+  //       console.log({id:results[i].id,data:newChat});
+  //     }
+  //     else{
+  //       newArr.push(results[i])
+  //       // console.log(chatUser);
+  //     }
+  //   }
+  //   console.log("NEWARR:",newArr);
+  // }
   // Search function to filter chats by user display name
+  function UpdateResultsAfterChat(chatId, newChatData) {
+    // Create a new array by mapping through the existing results
+    const newResults = results.map(result => {
+      // If this is the result we want to update
+      if (result.id === chatId) {
+        // Return a new object with the updated data
+        return {
+          ...result,
+          data: {
+            ...result.data,
+            chat: newChatData
+          }
+        };
+      }
+      // Otherwise return the result unchanged
+      return result;
+    });
+    
+    console.log("Updated Results:", newResults);
+    // Update your state
+    // setResults(newResults);
+  }
   function getSearchResults(input) {
     setSearchInput(input);
     
@@ -245,7 +295,7 @@ function ChatScroll({ currChatUserID,setCurrChat,fetchUserChats,setAllChats,allC
   useEffect(()=>{
     // console.log("YESSS");
     setResults(allChats);
-    // console.log("REAL",results)
+    console.log("REAL",allChats)
   },[allChats])
   const handleAddUser = async ({ email, name }) => {
     try {
@@ -280,26 +330,15 @@ function ChatScroll({ currChatUserID,setCurrChat,fetchUserChats,setAllChats,allC
         throw new Error('Failed to add user to contacts');
       }
       
-      // Optional: You could refresh your chat list here
-      // setResults([...results, {
-      //   id: addedUid, // This should be the added user's ID, not the current user's ID
-      //   data: {
-      //     chat: [],
-      //     timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      //     userId: name
-      //   }
-      // }]);
+     
       return true;
     } catch (error) {
       console.error('Error adding user:', error);
       throw error;
     }
   };
-  // useEffect(() => {
-  //   console.log('Results updated:', results);
-  // }, [results]);
 
-  // If no chats or filtered results are empty, show empty state
+  
   if (!results || results.length === 0) {
     return (
       <div className='chat-scroll-container'>
@@ -365,13 +404,14 @@ function ChatScroll({ currChatUserID,setCurrChat,fetchUserChats,setAllChats,allC
             return (
               `${user.uid}` !== chat.id ? (
                 <ChatBar 
-                setCurrChat={setCurrChat}
                   handleBack={handleBack} 
                   key={idx} 
                   chat={chat} 
                   handleCurrChat={handleOnClick} 
                   userUID={chat.id}
-                  currChatUserID={currChatUserID}
+                  currID={currID}
+                  setCurrChat={setCurrChat}
+                  UpdateResultsAfterChat={UpdateResultsAfterChat}
                 />
               ) : null
             );

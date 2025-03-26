@@ -122,7 +122,7 @@ useEffect(() => {
   const unsubscribe = onAuthStateChanged(auth, (user1) => {
     if (user1) {
       setUser(user1);
-      fetchUserChats(user1, setAllChats);
+      fetchUserChats(user1);
     } else {
       setUser(null);
     }
@@ -197,6 +197,7 @@ useEffect(() => {
             handleBack={handleBack} 
             chats={allChats} 
             handleOnClick={updateChats} 
+            // setCurrChat={setCurrChat}
             user={user}
             handleLogout={handleLogout} 
             handleChatClear={handleChatClear} 
@@ -225,6 +226,7 @@ useEffect(() => {
             showOutGoing={()=>{setShowOutGoing(true)}}
             allChats={allChats}
             setAllChats={setAllChats}
+            currID={currChatUserID}
 
           />
         </div>
@@ -246,6 +248,8 @@ useEffect(() => {
           user={user} 
           onCall={()=>setOnCall(true)} 
           showOutGoing={()=>{setShowOutGoing(true)}}
+          currID={currChatUserID}
+
           // handleLogout={handleLogout} handleChatClear={handleChatClear} deleteUser={deleteUser}
           />
             :

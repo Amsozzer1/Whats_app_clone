@@ -48,7 +48,7 @@ const TextInputBar = ({ onSendMessage }) => {
     );
   };
 
-function ChatPage({split_screen,updateAllChat,setAllChats,allChats,handleOnClick,handleBack,chat,currChatUser,currChatUserID,user,onCall,showOutGoing,setIsAddUserOpen,isAddUserOpen}){
+function ChatPage({fetchUserChats,split_screen,updateAllChat,setAllChats,allChats,handleOnClick,handleBack,chat,currChatUser,currChatUserID,user,onCall,showOutGoing,setIsAddUserOpen,isAddUserOpen}){
     const messagesEndRef = useRef(null);
     const [TextChain,setTextChain] = useState(chat);
     const { initiateCall, connected,sendMessage,messages,setMessages } = useWebSocket();
@@ -66,148 +66,16 @@ function ChatPage({split_screen,updateAllChat,setAllChats,allChats,handleOnClick
   useEffect(()=>{
     setTextChain(chat);
   },[chat]);
-  function updateChats(chats, newId, newData) {
-    const existingChatIndex = chats.findIndex(chat => chat.id === newId);
-    
-    if (existingChatIndex >= 0) {
-      // Update existing chat
-      return chats.map(chat => 
-        chat.id === newId ? { ...chat, data: newData } : chat
-      );
-    } else {
-      // Add new chat
-      return [...chats, { id: newId, data: newData }];
-    }
-  }
-  const processedMessagesRef = useRef({});
 
-  function constructMessage(obj) {
-    let NewMessage = {
-      isUser: false,
-      message: obj.message,
-      sender: obj.sender,
-      timestamp: "5:43 PM"
-    }
-    return NewMessage;
-  }
-  
-  function updateChats(chats, newId, newData) {
-    const existingChatIndex = chats.findIndex(chat => chat.id === newId);
-    
-    if (existingChatIndex >= 0) {
-      return chats.map(chat => 
-        chat.id === newId ? { ...chat, data: newData } : chat
-      );
-    } else {
-      return [...chats, { id: newId, data: newData }];
-    }
-  }
+
   
 
-  function handleMessages(messages, allChats, setAllChats, setMessages) {
-
-    if (!messages || Object.keys(messages).length === 0) return;
-    const updatedAllChats = [...allChats];
-    let hasChanges = false;
-    const messagesToRemove = [];
-    
-    for (const messageId in messages) {
-      const messageFingerprint = JSON.stringify(messages[messageId]);
-      if (processedMessagesRef.current[messageId] === messageFingerprint) {
-        continue;
-      }
-      let matchingChatIndex = -1;
-      for (let j = 0; j < updatedAllChats.length; j++) {
-        if (updatedAllChats[j].id == messageId) {
-          matchingChatIndex = j;
-          break;
-        }
-      }
-      if (matchingChatIndex === -1) continue;
-      const matchingChat = updatedAllChats[matchingChatIndex];
-      if (!matchingChat.data) {
-        matchingChat.data = {};
-      }
-      
-      if (!matchingChat.data.chat) {
-        matchingChat.data.chat = [];
-      }
-      const messageArray = messages[messageId];
-      
-      if (messageArray && messageArray.length > 0) {
-        for (let i = 0; i < messageArray.length; i++) {
-          if (messageArray[i]) {
-            matchingChat.data.chat.push(constructMessage(messageArray[i]));
-            hasChanges = true;
-          }
-        }
-        processedMessagesRef.current[messageId] = messageFingerprint;
-        messagesToRemove.push(messageId);
-      }
-    }
-    if (hasChanges && setAllChats) {
-      setAllChats(updatedAllChats);
-    }
-    if (messagesToRemove.length > 0 && setMessages) {
-      setMessages(prevMessages => {
-        const newMessages = {...prevMessages};
-
-        messagesToRemove.forEach(id => {
-          delete newMessages[id];
-        });
-        
-        return newMessages;
-      });
-    }
-    
-    return updatedAllChats;
-  }
-  
 
   useEffect(() => {
-  //   if(!split_screen){
-  //   if (Object.keys(messages).length > 0) {
-  //     handleMessages(messages, allChats, setAllChats, setMessages);
-  //   }
-  //   return () => {
-  //     processedMessagesRef.current = {};
-  //   };
-  // }
     // fetchUserChats(user);
 
   }, [messages]);
-// useEffect(() => {
-  
-//   if (user?.uid && messages[currChatUserID]) {
 
-//     setTextChain(prevChain => [...prevChain, ...messages[currChatUserID]]);
-//   }
-//   else{
-//     for (const messageId in messages) {
-      
-//       // Find the matching chat by ID
-//       let matchingChat = null;
-//       for (const j in allChats) {
-//         if (allChats[j].id == messageId) {
-//           matchingChat = Object.assign({}, allChats[j]);
-//           break;
-//         }
-//       }
-      
-//       // Skip if no matching chat was found (to maintain original behavior)
-//       if (!matchingChat) continue;
-      
-//       // Add the constructed message to the chat
-//       const currentMessage = messages[messageId];
-//       matchingChat.data.chat.push(constructMessage(currentMessage[currentMessage.length - 1]));
-      
-//       // Update chats and save the result
-//       const updatedChats = updateChats(allChats, messageId, matchingChat.data.chat);
-//       updateAllChat(updatedChats);
-//       console.log(allChats);
-//     }
-//   }
-// }, [messages, user?.uid,allChats]);
 
     function CreateTimeStamp(){
         var AM = 'AM'
