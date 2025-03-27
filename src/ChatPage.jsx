@@ -47,35 +47,30 @@ const TextInputBar = ({ onSendMessage }) => {
       </div>
     );
   };
-  
-function ChatPage({handleOnClick,handleBack,chat,currChatUser,currChatUserID,user,onCall,showOutGoing,setIsAddUserOpen,isAddUserOpen}){
+
+function ChatPage({fetchUserChats,split_screen,updateAllChat,setAllChats,allChats,handleOnClick,handleBack,chat,currChatUser,currChatUserID,user,onCall,showOutGoing,setIsAddUserOpen,isAddUserOpen}){
     const messagesEndRef = useRef(null);
     const [TextChain,setTextChain] = useState(chat);
-    const { initiateCall, connected,sendMessage,messages } = useWebSocket();
+    const { initiateCall, connected,sendMessage,messages,setMessages } = useWebSocket();
 
   
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
-  // useEffect(()=>{
-  //   console.log("HERE",chat,currChatUser,currChatUserID,user,onCall,showOutGoing);
-  // },[])
   useEffect(() => {
     scrollToBottom();
   }, [TextChain]);
   useEffect(()=>{
     setTextChain(chat);
   },[chat]);
- 
-useEffect(() => {
-  // Check if user exists and if there are messages for this user
-  if (user?.uid && messages[user.uid]) {
-    // Create a new array with all current messages for this user
-    setTextChain(prevChain => [...prevChain, ...messages[user.uid]]);
-    
-    // console.log("MESSAGES:", messages[user.uid]);
-  }
-}, [messages, user?.uid]);
+
+
+
+
+  useEffect(() => {
+
+  }, [messages]);
+
 
     function CreateTimeStamp(){
         var AM = 'AM'
@@ -93,7 +88,7 @@ useEffect(() => {
     function sendMessageChat(text){
 
         let newText = {
-            "sender": "user1",
+            "sender": user?.uid,
             "message": text,
             "timestamp": CreateTimeStamp(),
             "isUser": true
@@ -108,8 +103,6 @@ useEffect(() => {
           .then(res=>res.json())
           .then(data=>console.log(data))
           .catch(error=>console.log(error));
-
-        // console.log(user.uid,currChatUserID);
         sendMessage({
           type: 'message_sent',
           message: newText,
@@ -123,22 +116,25 @@ useEffect(() => {
     React.useEffect(()=>{
         setTextChain(chat);
     },[chat])
-    // React.useEffect(()=>{
-    //     console.log(currChatUserID);
-    // },[currChatUserID])
     if(currChatUserID!=""){
       return(
         <div className="Page">
         <ChatTopBar handleBack={handleBack} user={currChatUser} onCall={onCall} initiateCall={initiateCall} connected={connected} calledTo={currChatUserID} showOutGoing={showOutGoing}/>
         <div className="chat-container">
-            {TextChain.map((obj, idx) => {
-                return(
-                <div key={idx} className={`chat-message ${obj.isUser ? 'received' : 'sent'}`}>
-                    {obj.message}
-                    <span className="timestamp">{obj.timestamp}</span>
-                </div>
-                );
-            })}
+        {TextChain.map((obj, idx) => {
+  // Skip rendering if obj is undefined
+  if (!obj) return null;
+  
+  return (
+    <div
+      key={idx}
+      className={`chat-message ${obj.isUser !== undefined ? (obj.isUser ? 'received' : 'sent') : ''}`}
+    >
+      {obj.message}
+      <span className="timestamp">{obj.timestamp}</span>
+    </div>
+  );
+})}
             <div ref={messagesEndRef} />
         </div>
         

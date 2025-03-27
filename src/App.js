@@ -21,8 +21,7 @@ const auth = getAuth();
 const provider = new GoogleAuthProvider();
 
 export default function App(){
-   
-  
+
       const [currChat,setCurrChat] = useState([]);
       const [currChatUser,setCurrChatUser] = useState("");
       const [currChatUserID,setCurrChatUserID] = useState("");
@@ -36,50 +35,102 @@ export default function App(){
 
 
       const [accepted,setAccepted] = useState(false);
+
+
+    function handleLogout(){
+      signOut(auth);
+    }
+
+    async function handleChatClear() {
+      try {
+        const response = await fetch(`${BASE_BACK_URL}/clearChats?collection=${user?.uid}`, {
+          method: 'DELETE'
+        });
+        const result = await response.json();
+        if (result.success){
+          window.location.reload();
+        }
+        return result.success;
+      } catch (error) {
+        console.error('Error clearing chat:', error);
+        return false;
+      }
+    }
+    
+    async function deleteUser() {
+      try {
+        const response = await fetch(`${BASE_BACK_URL}/deleteUser?userId=${user?.uid}`, {
+          method: 'DELETE'
+        });
+        const result = await response.json();
+        return result.success;
+      } catch (error) {
+        console.error('Error deleting user:', error);
+        return false;
+      }
+    }
+
       function handleCallAccept(callid){
         setAccepted(true);
         // setCallID(callid);
       }
-      function updateChats(chatUser,currChat,ChatUserID){
-        setCurrChatUser(chatUser);
-        setCurrChat(currChat);
-        setCurrChatUserID(ChatUserID);
-        // console.log(chatUser);
-      }
+  function updateChats(chatUser,currChat,ChatUserID){
+    setCurrChatUser(chatUser);
+    setCurrChat(currChat);
+    setCurrChatUserID(ChatUserID);
+    console.log("currChat:",currChat);
+    // console.log(chatUser);
+  }
 
-      // useEffect(() => {
-      //   console.log('onCall value changed:', user?.displayName);
-      // }, [user]);
-
-      
-      useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, (user1) => {
-          if (user1) {
-            setUser(user1);
-
-            
-            fetch(BASE_BACK_URL+"/getChats?CollectionName="+user1.uid,
-              {
-                method:'GET',
-                headers:{
-                  'Content-Type': 'application/json'
-                }
-              }
-            )
-            .then((res)=>res.json())
-            .then(data=>{
-              setAllChats(data.documents)
-              // console.log(data.documents[0].data.chat);
-            })  
-            .catch(error=> console.error(error))
-
-          } else {
-            setUser(null);
+      function updateAllChat(chatUpdatedFor, message) {
+        return allChats.map(chat => {
+          if (chat.id === chatUpdatedFor) {
+            // Create a copy of the chat object
+            const updatedChat = { ...chat };
+            // Add the message to data.chat
+            updatedChat.data.chat.push(message);
+            return updatedChat;
           }
+          return chat;
         });
-        
-        return () => unsubscribe();
-      }, [auth]);
+      }
+const fetchUserChats = async (user) => {
+  if (!user) return;
+  
+  try {
+    const response = await fetch(`${BASE_BACK_URL}/getChats?CollectionName=${user.uid}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    setAllChats(data.documents);
+    return data.documents;
+  } catch (error) {
+    console.error("Error fetching chats:", error);
+    return [];
+  }
+};
+
+// Usage in your component
+useEffect(() => {
+  const unsubscribe = onAuthStateChanged(auth, (user1) => {
+    if (user1) {
+      setUser(user1);
+      fetchUserChats(user1);
+    } else {
+      setUser(null);
+    }
+  });
+  
+  return () => unsubscribe();
+}, [auth]);
 
     function SignUp(){
       signInWithPopup(auth, provider)
@@ -139,19 +190,32 @@ export default function App(){
           maxWidth: '400px',
           minWidth: '280px'  // Adding a minimum width for usability
         }}>
-          <ChatScroll 
+          <ChatScroll
+          setCurrChat={setCurrChat}
+          fetchUserChats={fetchUserChats}
           setIsAddUserOpen={setIsAddUserOpen}
           isAddUserOpen={isAddUserOpen}
             handleBack={handleBack} 
             chats={allChats} 
+            currChat={currChatUserID}
             handleOnClick={updateChats} 
+            // setCurrChat={setCurrChat}
             user={user}
+            handleLogout={handleLogout} 
+            handleChatClear={handleChatClear} 
+            deleteUser={deleteUser}
+            allChats={allChats}
+            updateAllChat={setAllChats}
+            currUser = {currChatUserID}
           />
         </div>
         <div style={{ 
           flex: 1  // This will make it take up the remaining space
         }}>
           <ChatPage 
+          fetchUserChats={fetchUserChats}
+          split_screen={false}
+          updateAllChat={updateAllChat}
           setIsAddUserOpen={setIsAddUserOpen}
           isAddUserOpen={isAddUserOpen}
             handleOnClick={updateChats} 
@@ -162,16 +226,45 @@ export default function App(){
             user={user} 
             onCall={()=>setOnCall(true)} 
             showOutGoing={()=>{setShowOutGoing(true)}}
+            allChats={allChats}
+            setAllChats={setAllChats}
+            currID={currChatUserID}
+
           />
         </div>
       </div>:
         !back?
           <ChatPage
+          split_screen={false}
+          fetchUserChats={fetchUserChats}
+          updateAllChat={updateAllChat}
+          allChats={allChats}
+          setAllChats={setAllChats}
           setIsAddUserOpen={setIsAddUserOpen}
           isAddUserOpen={isAddUserOpen}
-          handleOnClick={updateChats} handleBack={handleBack} chat={currChat} currChatUser={currChatUser} currChatUserID={currChatUserID} user={user} onCall={()=>setOnCall(true)} showOutGoing={()=>{setShowOutGoing(true)}}/>
+          handleOnClick={updateChats} 
+          handleBack={handleBack} 
+          chat={currChat} 
+          currChatUser={currChatUser} 
+          currChatUserID={currChatUserID} 
+          user={user} 
+          onCall={()=>setOnCall(true)} 
+          showOutGoing={()=>{setShowOutGoing(true)}}
+          currID={currChatUserID}
+
+          // handleLogout={handleLogout} handleChatClear={handleChatClear} deleteUser={deleteUser}
+          />
             :
           <ChatScroll
+          currUser = {currChatUserID}
+          currChat={currChatUserID}
+          setCurrChat={setCurrChat}
+          fetchUserChats={fetchUserChats}
+          allChats={allChats}
+            setAllChats={setAllChats}
+          handleLogout={handleLogout} 
+            handleChatClear={handleChatClear} 
+            deleteUser={deleteUser}
           setIsAddUserOpen={setIsAddUserOpen} isAddUserOpen={isAddUserOpen}
           handleBack={handleBack} chats={allChats} handleOnClick={updateChats} user={user}/>
       }

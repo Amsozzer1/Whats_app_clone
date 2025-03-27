@@ -1,5 +1,5 @@
 // ChatBar.jsx
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState,useRef } from 'react';
 import './Chat.css';
 import DummyAvatar from './Untitled.jpeg';
 import BASE_BACK_URL from './URL';
@@ -8,11 +8,19 @@ import MoreVertIcon from '@mui/icons-material/MoreVert';
 import AddCommentIcon from '@mui/icons-material/AddComment';
 import AddUserPopup from './addUser';
 import SettingsMenu from './settingsMenu';
+import { Drawer } from '@mui/material';
+import ChatIcon from '@mui/icons-material/Chat';
+import SettingsIcon from '@mui/icons-material/Settings';
+import { useWebSocket } from './WebSocket';
 
-function ChatBar({ chat, handleCurrChat, userUID, handleBack }) {
+
+// import SettingsMenu from './settingsMenu';
+function ChatBar({ currChat,UpdateResultsAfterChat,setCurrChat,chat, handleCurrChat, userUID, handleBack,currID }) {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const { initiateCall, connected,sendMessage,messages,setMessages } = useWebSocket();
 
+  
   async function getUserByID(uid) {
     try {
       const response = await fetch(`${BASE_BACK_URL}/getUser?userId=${uid}`);
@@ -22,7 +30,7 @@ function ChatBar({ chat, handleCurrChat, userUID, handleBack }) {
       const data = await response.json();
       return data;
     } catch (error) {
-      console.log("Error fetching user:", error);
+      // console.log("Error fetching user:", error);
       return null;
     }
   }
@@ -39,7 +47,16 @@ function ChatBar({ chat, handleCurrChat, userUID, handleBack }) {
       loadUser();
     }
   }, [userUID]);
-
+  useEffect(()=>{
+    // for(le)
+    // console.log("CHAT:",UpdateResultsAfterChat,setCurrChat,chat, handleCurrChat, userUID, handleBack,currID )
+    // console.log("ONLY:",currChat,chat.id)
+    
+    // if(currChat == chat.id){
+    //   // console.log("ONLY:",currChat,chat.id)
+    //   UpdateResultsAfterChat
+    // }
+  },[chat])
   // Calculate how long ago the last message was sent
   const getLastMessageTime = () => {
     if (!chat?.data?.timestamp) return '';
@@ -68,7 +85,40 @@ function ChatBar({ chat, handleCurrChat, userUID, handleBack }) {
       ? lastMessage.message.substring(0, 27) + '...' 
       : lastMessage.message;
   };
+    useEffect(()=>{
+      var ref = chat
+      ref.data.chat.concat(messages[chat.id]);
 
+      function addMessageToChat(chatArray, newMessage) {
+        // Make a copy of the current chat array
+        const updatedChat = [...chatArray];
+        
+        // If the new message is wrapped in an array, extract it
+        const messageToAdd = Array.isArray(newMessage) ? newMessage[0] : newMessage;
+        
+        // Push the object directly to the array
+        updatedChat.push(messageToAdd);
+        
+        return updatedChat;
+      }
+      
+      // Usage
+      const newChatData = addMessageToChat(chat.data.chat, messages[chat.id]);
+      
+      if(chat && currChat == chat.id){
+        let updates = UpdateResultsAfterChat(chat.id, newChatData);
+        for(let i in updates){
+          if (updates[i] && updates[i]!=undefined){
+            setCurrChat(updates[i].data.chat);
+            // console.log(updates[i].data.chat);
+          }
+        }
+        // console.log(UpdateResultsAfterChat(chat.id, newChatData)[chat.id]);
+        // UpdateResultsAfterChat(chat.id, newChatData)
+      }
+
+      // console.log("THIS",ref.data.chat.concat(messages[chat.id]),messages[chat.id]);
+    },[messages])
   return (
     <div className='chat-bar' onClick={() => {
       handleCurrChat(chat.data.userId, chat.data.chat, chat.id);
@@ -94,13 +144,22 @@ function ChatBar({ chat, handleCurrChat, userUID, handleBack }) {
         </div>
         <div className='chat-info-bottom'>
           <p className='chat-preview'>{getLastMessagePreview()}</p>
+          
         </div>
       </div>
     </div>
   );
 }
 
-function Header() {
+function Header({handleLogout,handleChatClear,deleteUser}) {
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  
+  const toggleDrawer = (open) => (event) => {
+    if (event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
+      return;
+    }
+    setIsDrawerOpen(open);
+  };
   return(
     <div className='sidebar-header'>
       <div className='sidebar-header-left'>
@@ -108,18 +167,52 @@ function Header() {
       </div>
       <div className='sidebar-header-actions'>
         {/* <button className='header-btn'><SearchIcon /></button> */}
-        <button className='header-btn'><MoreVertIcon /></button>
+        <button className='header-btn'
+          onClick={()=>setIsDrawerOpen(!isDrawerOpen)}
+        
+        ><MoreVertIcon /></button>
       </div>
+      <Drawer
+          anchor="right"
+          open={isDrawerOpen}
+          onClose={()=>setIsDrawerOpen(!isDrawerOpen)}
+        >
+          <SettingsMenu 
+            onClose={()=>setIsDrawerOpen(!isDrawerOpen)}
+            onClearChat={handleChatClear}
+            handleLogout={handleLogout}
+            onDeleteAccount={deleteUser}
+          />
+        </Drawer>
     </div>
   );
 }
 
-function ChatScroll({ chats, handleOnClick, user, handleBack ,setIsAddUserOpen,isAddUserOpen}) {
+function ChatScroll({currChat,setCurrChat, currID,fetchUserChats,setAllChats,allChats,chats, handleOnClick, user, handleBack ,setIsAddUserOpen,isAddUserOpen,handleLogout,handleChatClear,deleteUser}) {
   const [results, setResults] = useState([]);
   const [searchInput, setSearchInput] = useState('');
   const [chatUsers, setChatUsers] = useState({});
   const [isLoadingUsers, setIsLoadingUsers] = useState(false);
+  const { initiateCall, connected, sendMessage, messages, setMessages } = useWebSocket();
 
+  useEffect(() => {
+    // Create the async function
+    const getUserChats = async () => {
+      console.log("fetchUserChats(user)", await fetchUserChats(user));
+    };
+    
+    // Set a timeout to delay the execution by 2 seconds (2000 milliseconds)
+    const timeoutId = setTimeout(() => {
+      getUserChats();
+    }, 500);
+    
+    // Return a cleanup function that clears the timeout if the component unmounts
+    // before the timeout completes - this prevents memory leaks
+    return () => {
+      clearTimeout(timeoutId);
+    };
+  }, [messages]);
+  
   // Function to get user by ID - use the same one from ChatBar
   async function getUserByID(uid) {
     try {
@@ -130,15 +223,15 @@ function ChatScroll({ chats, handleOnClick, user, handleBack ,setIsAddUserOpen,i
       const data = await response.json();
       return data;
     } catch (error) {
-      console.log("Error fetching user:", error);
+      // console.log("Error fetching user:", error);s
       return null;
     }
   }
 
   // Initialize results with all chats when component mounts or chats change
   useEffect(() => {
-    setResults(chats);
-  }, [chats]);
+    setResults(allChats);
+  }, [allChats]);
 
   // Fetch user data for all chats to use in search
   useEffect(() => {
@@ -166,21 +259,57 @@ function ChatScroll({ chats, handleOnClick, user, handleBack ,setIsAddUserOpen,i
     
     fetchAllUsers();
   }, [chats, user.uid]);
-
+  // function UpdateResultsAfterChat(chatUser,newChat){
+  //   let newArr=[]
+  //   let update = []
+  //   for(let i in results){
+  //     if(results[i].id==chatUser){
+  //       // newArr.push(i)
+  //       // newArr.push({id:results[i].id,data:newChat});
+  //       console.log({id:results[i].id,data:newChat});
+  //     }
+  //     else{
+  //       newArr.push(results[i])
+  //       // console.log(chatUser);
+  //     }
+  //   }
+  //   console.log("NEWARR:",newArr);
+  // }
   // Search function to filter chats by user display name
+  function UpdateResultsAfterChat(chatId, newChatData) {
+    // Create a new array by mapping through the existing results
+    const newResults = results.map(result => {
+      // If this is the result we want to update
+      if (result.id === chatId) {
+        // Return a new object with the updated data
+        return {
+          ...result,
+          data: {
+            ...result.data,
+            chat: newChatData
+          }
+        };
+      }
+      // Otherwise return the result unchanged
+      
+    });
+    // setResults(newResults);
+
+    return newResults;
+  }
   function getSearchResults(input) {
     setSearchInput(input);
     
     if (!input || input.trim() === '') {
       // If search input is empty, show all chats
-      setResults(chats);
+      setResults(allChats);
       return;
     }
     
     const searchTerm = input.toLowerCase().trim();
     
     // Filter chats by user display name
-    const filteredChats = chats.filter(chat => {
+    const filteredChats = allChats.filter(chat => {
       // Skip current user's chat
       if (chat.id === user.uid) {
         return false;
@@ -193,9 +322,13 @@ function ChatScroll({ chats, handleOnClick, user, handleBack ,setIsAddUserOpen,i
       return chatUser?.displayName?.toLowerCase().includes(searchTerm);
     });
     
-    setResults(filteredChats);
+    // setResults(filteredChats);
   }
-
+  useEffect(()=>{
+    // console.log("YESSS");
+    setResults(allChats);
+    // console.log("REAL",allChats)
+  },[allChats])
   const handleAddUser = async ({ email, name }) => {
     try {
       // Step 1: Get all users from the endpoint
@@ -229,26 +362,15 @@ function ChatScroll({ chats, handleOnClick, user, handleBack ,setIsAddUserOpen,i
         throw new Error('Failed to add user to contacts');
       }
       
-      // Optional: You could refresh your chat list here
-      setResults([...results, {
-        id: addedUid, // This should be the added user's ID, not the current user's ID
-        data: {
-          chat: [],
-          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          userId: name
-        }
-      }]);
+     
       return true;
     } catch (error) {
       console.error('Error adding user:', error);
       throw error;
     }
   };
-  useEffect(() => {
-    console.log('Results updated:', results);
-  }, [results]);
 
-  // If no chats or filtered results are empty, show empty state
+  
   if (!results || results.length === 0) {
     return (
       <div className='chat-scroll-container'>
@@ -285,7 +407,9 @@ function ChatScroll({ chats, handleOnClick, user, handleBack ,setIsAddUserOpen,i
 
   return (
     <div className='chat-scroll-container'>
-      <Header />
+      <Header 
+      handleLogout={handleLogout} handleChatClear={handleChatClear} deleteUser={deleteUser}
+      />
       <div className='search-container'>
         <div className='search-input-wrapper'>
           <SearchIcon className='search-icon' />
@@ -317,6 +441,10 @@ function ChatScroll({ chats, handleOnClick, user, handleBack ,setIsAddUserOpen,i
                   chat={chat} 
                   handleCurrChat={handleOnClick} 
                   userUID={chat.id}
+                  currID={currID}
+                  setCurrChat={setCurrChat}
+                  UpdateResultsAfterChat={UpdateResultsAfterChat}
+                  currChat={currChat}
                 />
               ) : null
             );

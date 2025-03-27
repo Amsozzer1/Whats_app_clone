@@ -32,6 +32,7 @@ useEffect(() => {
     if (!userId) return;
     
     const ws = new WebSocket(`wss://whats-app-clone-backend-1wf4.onrender.com/socket`);
+    // const ws = new WebSocket(`ws://192.168.0.53:3006/socket`);
     
     ws.onopen = () => {
       console.log('WebSocket connected');
@@ -105,21 +106,17 @@ useEffect(() => {
           if(data.type=="message_sent"){
             // const [messages,setMessages] = useState({});
 
-            if (data.receiver in messages) {
-              // Create a new array with the existing messages plus the new one
+            if (data.sender in messages) {
               setMessages(prevMessages => ({
                 ...prevMessages,
-                [data.receiver]: [...prevMessages[data.receiver], data.message]
+                [data.sender]: [...prevMessages[data.sender], data.message]
               }));
             } else {
-              // Initialize with an array containing the first message
               setMessages(prevMessages => ({
                 ...prevMessages,
-                [data.receiver]: [data.message]
+                [data.sender]: [data.message]
               }));
             }
-
-            // messages[data.receiver] = [1,2,3,4]
           }
         
         
@@ -219,6 +216,7 @@ useEffect(() => {
     initiateCall,
     respondToCall,
     clearIncomingCall,
+    setMessages,
     cancelCall, // Add this
   };
   
