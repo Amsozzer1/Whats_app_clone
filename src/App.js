@@ -36,6 +36,7 @@ export default function App(){
 
       const [accepted,setAccepted] = useState(false);
 
+
     function handleLogout(){
       signOut(auth);
     }
@@ -165,7 +166,7 @@ useEffect(() => {
       
     }}>
       {/* <div id="recaptcha-container"></div> */}
-      <SideBar User={user} handleLogout={handleLogout} handleChatClear={handleChatClear} deleteUser={deleteUser}/>
+      <SideBar User={user}/>
       {/* <div style={{width:400,height:100}}><p style={{color:'white'}}>accepted:{accepted?'yes':'no'}</p></div> */}
 
       {/* <div
