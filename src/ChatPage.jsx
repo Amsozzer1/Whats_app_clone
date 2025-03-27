@@ -57,9 +57,6 @@ function ChatPage({fetchUserChats,split_screen,updateAllChat,setAllChats,allChat
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
-  // useEffect(()=>{
-  //   console.log("HERE",chat,currChatUser,currChatUserID,user,onCall,showOutGoing);
-  // },[])
   useEffect(() => {
     scrollToBottom();
   }, [TextChain]);
@@ -68,11 +65,9 @@ function ChatPage({fetchUserChats,split_screen,updateAllChat,setAllChats,allChat
   },[chat]);
 
 
-  
 
 
   useEffect(() => {
-    // fetchUserChats(user);
 
   }, [messages]);
 
@@ -108,8 +103,6 @@ function ChatPage({fetchUserChats,split_screen,updateAllChat,setAllChats,allChat
           .then(res=>res.json())
           .then(data=>console.log(data))
           .catch(error=>console.log(error));
-
-        // console.log(user.uid,currChatUserID);
         sendMessage({
           type: 'message_sent',
           message: newText,
@@ -123,22 +116,25 @@ function ChatPage({fetchUserChats,split_screen,updateAllChat,setAllChats,allChat
     React.useEffect(()=>{
         setTextChain(chat);
     },[chat])
-    // React.useEffect(()=>{
-    //     console.log(currChatUserID);
-    // },[currChatUserID])
     if(currChatUserID!=""){
       return(
         <div className="Page">
         <ChatTopBar handleBack={handleBack} user={currChatUser} onCall={onCall} initiateCall={initiateCall} connected={connected} calledTo={currChatUserID} showOutGoing={showOutGoing}/>
         <div className="chat-container">
-            {TextChain.map((obj, idx) => {
-                return(
-                <div key={idx} className={`chat-message ${obj.isUser ? 'received' : 'sent'}`}>
-                    {obj.message}
-                    <span className="timestamp">{obj.timestamp}</span>
-                </div>
-                );
-            })}
+        {TextChain.map((obj, idx) => {
+  // Skip rendering if obj is undefined
+  if (!obj) return null;
+  
+  return (
+    <div
+      key={idx}
+      className={`chat-message ${obj.isUser !== undefined ? (obj.isUser ? 'received' : 'sent') : ''}`}
+    >
+      {obj.message}
+      <span className="timestamp">{obj.timestamp}</span>
+    </div>
+  );
+})}
             <div ref={messagesEndRef} />
         </div>
         

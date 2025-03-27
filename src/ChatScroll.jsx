@@ -15,7 +15,7 @@ import { useWebSocket } from './WebSocket';
 
 
 // import SettingsMenu from './settingsMenu';
-function ChatBar({ UpdateResultsAfterChat,setCurrChat,chat, handleCurrChat, userUID, handleBack,currID }) {
+function ChatBar({ currChat,UpdateResultsAfterChat,setCurrChat,chat, handleCurrChat, userUID, handleBack,currID }) {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const { initiateCall, connected,sendMessage,messages,setMessages } = useWebSocket();
@@ -30,7 +30,7 @@ function ChatBar({ UpdateResultsAfterChat,setCurrChat,chat, handleCurrChat, user
       const data = await response.json();
       return data;
     } catch (error) {
-      console.log("Error fetching user:", error);
+      // console.log("Error fetching user:", error);
       return null;
     }
   }
@@ -48,7 +48,14 @@ function ChatBar({ UpdateResultsAfterChat,setCurrChat,chat, handleCurrChat, user
     }
   }, [userUID]);
   useEffect(()=>{
-    // console.log("CHAT:",chat)
+    // for(le)
+    // console.log("CHAT:",UpdateResultsAfterChat,setCurrChat,chat, handleCurrChat, userUID, handleBack,currID )
+    // console.log("ONLY:",currChat,chat.id)
+    
+    // if(currChat == chat.id){
+    //   // console.log("ONLY:",currChat,chat.id)
+    //   UpdateResultsAfterChat
+    // }
   },[chat])
   // Calculate how long ago the last message was sent
   const getLastMessageTime = () => {
@@ -81,10 +88,36 @@ function ChatBar({ UpdateResultsAfterChat,setCurrChat,chat, handleCurrChat, user
     useEffect(()=>{
       var ref = chat
       ref.data.chat.concat(messages[chat.id]);
-      const newChatData = [...chat.data.chat, messages[chat.id]];
-        UpdateResultsAfterChat(chat.id, newChatData);
 
-      console.log("THIS",ref.data.chat.concat(messages[chat.id]),messages[chat.id]);
+      function addMessageToChat(chatArray, newMessage) {
+        // Make a copy of the current chat array
+        const updatedChat = [...chatArray];
+        
+        // If the new message is wrapped in an array, extract it
+        const messageToAdd = Array.isArray(newMessage) ? newMessage[0] : newMessage;
+        
+        // Push the object directly to the array
+        updatedChat.push(messageToAdd);
+        
+        return updatedChat;
+      }
+      
+      // Usage
+      const newChatData = addMessageToChat(chat.data.chat, messages[chat.id]);
+      
+      if(chat && currChat == chat.id){
+        let updates = UpdateResultsAfterChat(chat.id, newChatData);
+        for(let i in updates){
+          if (updates[i] && updates[i]!=undefined){
+            setCurrChat(updates[i].data.chat);
+            // console.log(updates[i].data.chat);
+          }
+        }
+        // console.log(UpdateResultsAfterChat(chat.id, newChatData)[chat.id]);
+        // UpdateResultsAfterChat(chat.id, newChatData)
+      }
+
+      // console.log("THIS",ref.data.chat.concat(messages[chat.id]),messages[chat.id]);
     },[messages])
   return (
     <div className='chat-bar' onClick={() => {
@@ -155,7 +188,7 @@ function Header({handleLogout,handleChatClear,deleteUser}) {
   );
 }
 
-function ChatScroll({setCurrChat, currID,fetchUserChats,setAllChats,allChats,chats, handleOnClick, user, handleBack ,setIsAddUserOpen,isAddUserOpen,handleLogout,handleChatClear,deleteUser}) {
+function ChatScroll({currChat,setCurrChat, currID,fetchUserChats,setAllChats,allChats,chats, handleOnClick, user, handleBack ,setIsAddUserOpen,isAddUserOpen,handleLogout,handleChatClear,deleteUser}) {
   const [results, setResults] = useState([]);
   const [searchInput, setSearchInput] = useState('');
   const [chatUsers, setChatUsers] = useState({});
@@ -190,7 +223,7 @@ function ChatScroll({setCurrChat, currID,fetchUserChats,setAllChats,allChats,cha
       const data = await response.json();
       return data;
     } catch (error) {
-      console.log("Error fetching user:", error);
+      // console.log("Error fetching user:", error);s
       return null;
     }
   }
@@ -258,12 +291,11 @@ function ChatScroll({setCurrChat, currID,fetchUserChats,setAllChats,allChats,cha
         };
       }
       // Otherwise return the result unchanged
-      return result;
+      
     });
-    
-    console.log("Updated Results:", newResults);
-    // Update your state
     // setResults(newResults);
+
+    return newResults;
   }
   function getSearchResults(input) {
     setSearchInput(input);
@@ -295,7 +327,7 @@ function ChatScroll({setCurrChat, currID,fetchUserChats,setAllChats,allChats,cha
   useEffect(()=>{
     // console.log("YESSS");
     setResults(allChats);
-    console.log("REAL",allChats)
+    // console.log("REAL",allChats)
   },[allChats])
   const handleAddUser = async ({ email, name }) => {
     try {
@@ -412,6 +444,7 @@ function ChatScroll({setCurrChat, currID,fetchUserChats,setAllChats,allChats,cha
                   currID={currID}
                   setCurrChat={setCurrChat}
                   UpdateResultsAfterChat={UpdateResultsAfterChat}
+                  currChat={currChat}
                 />
               ) : null
             );

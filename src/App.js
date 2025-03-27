@@ -196,6 +196,7 @@ useEffect(() => {
           isAddUserOpen={isAddUserOpen}
             handleBack={handleBack} 
             chats={allChats} 
+            currChat={currChatUserID}
             handleOnClick={updateChats} 
             // setCurrChat={setCurrChat}
             user={user}
@@ -255,7 +256,7 @@ useEffect(() => {
             :
           <ChatScroll
           currUser = {currChatUserID}
-
+          currChat={currChatUserID}
           setCurrChat={setCurrChat}
           fetchUserChats={fetchUserChats}
           allChats={allChats}
