@@ -31,12 +31,7 @@ export default function App(){
       const [user,setUser] = useState(null);
       const [allChats,setAllChats] = useState([]);
       const [isAddUserOpen, setIsAddUserOpen] = useState(false);
-
-
-
       const [accepted,setAccepted] = useState(false);
-
-
     function handleLogout(){
       signOut(auth);
     }
