@@ -5,14 +5,14 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import DeleteSweepIcon from '@mui/icons-material/DeleteSweep';
 import LogoutIcon from '@mui/icons-material/Logout';
 
-function SettingsMenu({ onClose, onClearChat, onClearAllChats, onDeleteAccount }) {
+function SettingsMenu({ onClose, onClearChat, handleLogout, onDeleteAccount }) {
   const handleClearChat = () => {
     onClearChat();
-    onClose();
+    // onClose();
   };
 
   const handleClearAllChats = () => {
-    onClearAllChats();
+    handleLogout();
     onClose();
   };
 
@@ -33,20 +33,20 @@ function SettingsMenu({ onClose, onClearChat, onClearAllChats, onDeleteAccount }
           <ListItemText primary="Settings" />
         </ListItem>
         <Divider />
-        <ListItem button onClick={handleClearChat}>
+        <ListItem button onClick={onClearChat}>
           <ListItemIcon>
             <DeleteIcon />
           </ListItemIcon>
-          <ListItemText primary="Clear This Chat" />
+          <ListItemText primary="Clear Chats" />
         </ListItem>
-        <ListItem button onClick={handleClearAllChats}>
+        <ListItem button onClick={onClearChat}>
           <ListItemIcon>
             <DeleteSweepIcon />
           </ListItemIcon>
-          <ListItemText primary="Clear All Chats" />
+          <ListItemText primary="Logout" />
         </ListItem>
         <Divider />
-        <ListItem button onClick={handleDeleteAccount} className="delete-account">
+        <ListItem button onClick={onDeleteAccount} className="delete-account">
           <ListItemIcon>
             <LogoutIcon />
           </ListItemIcon>

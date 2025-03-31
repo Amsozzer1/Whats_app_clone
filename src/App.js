@@ -32,11 +32,13 @@ export default function App(){
       const [allChats,setAllChats] = useState([]);
       const [isAddUserOpen, setIsAddUserOpen] = useState(false);
       const [accepted,setAccepted] = useState(false);
-    function handleLogout(){
-      signOut(auth);
-    }
+      function handleLogout(){
+        console.log("WGH");
+        signOut(auth);
+      }
 
     async function handleChatClear() {
+      console.log("WHAT");
       try {
         const response = await fetch(`${BASE_BACK_URL}/clearChats?collection=${user?.uid}`, {
           method: 'DELETE'
@@ -53,6 +55,8 @@ export default function App(){
     }
     
     async function deleteUser() {
+      console.log("WHAT3");
+
       try {
         const response = await fetch(`${BASE_BACK_URL}/deleteUser?userId=${user?.uid}`, {
           method: 'DELETE'
@@ -161,7 +165,13 @@ useEffect(() => {
       
     }}>
       {/* <div id="recaptcha-container"></div> */}
-      <SideBar User={user}/>
+      <SideBar User={user}
+      
+      handleLogout={handleLogout} 
+            handleChatClear={handleChatClear} 
+            deleteUser={deleteUser}
+      
+      />
       {/* <div style={{width:400,height:100}}><p style={{color:'white'}}>accepted:{accepted?'yes':'no'}</p></div> */}
 
       {/* <div

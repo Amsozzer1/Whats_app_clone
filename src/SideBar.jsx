@@ -7,7 +7,7 @@ import ChatIcon from '@mui/icons-material/Chat';
 import SettingsIcon from '@mui/icons-material/Settings';
 import SettingsMenu from './settingsMenu';
 
-function SideBar({ User }) {
+function SideBar({ User,handleLogout,handleChatClear,deleteUser }) {
   const [userAvatar, setUserAvatar] = useState(DummyImage);
 
   useEffect(() => {
@@ -25,17 +25,20 @@ function SideBar({ User }) {
 
   const handleClearChat = () => {
     // Implement your clear chat function here
-    console.log('Clear this chat');
+    // console.log('Clear this chat');
+    handleChatClear();
   };
 
   const handleClearAllChats = () => {
     // Implement your clear all chats function here
-    console.log('Clear all chats');
+    // console.log('Clear all chats');
+    handleLogout();
   };
 
   const handleDeleteAccount = () => {
     // Implement your delete account function here
-    console.log('Delete account');
+    // console.log('Delete account');
+    handleDeleteAccount();
   };
 
   return (
@@ -66,9 +69,9 @@ function SideBar({ User }) {
         >
           <SettingsMenu 
             onClose={toggleDrawer(false)}
-            onClearChat={handleClearChat}
-            onClearAllChats={handleClearAllChats}
-            onDeleteAccount={handleDeleteAccount}
+            onClearChat={handleLogout}
+            onClearAllChats={handleLogout}
+            onDeleteAccount={deleteUser}
           />
         </Drawer>
       </div>

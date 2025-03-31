@@ -408,7 +408,8 @@ function ChatScroll({currChat,setCurrChat, currID,fetchUserChats,setAllChats,all
   return (
     <div className='chat-scroll-container'>
       <Header 
-      handleLogout={handleLogout} handleChatClear={handleChatClear} deleteUser={deleteUser}
+
+handleLogout={handleLogout} handleChatClear={handleChatClear} deleteUser={deleteUser}
       />
       <div className='search-container'>
         <div className='search-input-wrapper'>
